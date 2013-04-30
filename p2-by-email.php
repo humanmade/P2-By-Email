@@ -66,28 +66,7 @@ class P2_By_Email {
 		}
 	}
 
-	private function get_email_headers() {
-
-		$from_email = 'noreply@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
-		$headers = sprintf( 'From: %s <%s>', get_bloginfo( 'name'), $from_email ) . PHP_EOL;
-		return $headers;
-	}
-
-	/**
-	 * Get the message text for an email
-	 *
-	 * @param object|int       $post      Post we'd like message text for
-	 */
-	private function get_email_message_post( $post ) {
-
-		if ( is_int( $post ) )
-			$post = get_post( $post );
-
-		$message = apply_filters( 'the_content', $post->post_content );
-		return $message;
-	}
-
-	private function send_post_notification( $post_id, $email ) {
+	public function send_post_notification( $post_id, $email ) {
 
 		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post_id );
@@ -96,6 +75,54 @@ class P2_By_Email {
 		$message = apply_filters( 'p2be_notification_message', $message, 'post', $post_id );
 
 		wp_mail( $email, $subject, $message, $this->get_email_headers() );
+	}
+
+	private function get_email_headers() {
+
+		$from_email = 'noreply@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
+		$headers = sprintf( 'From: %s <%s>', get_bloginfo( 'name'), $from_email ) . PHP_EOL;
+		$headers .= 'Content-type: text/html' . PHP_EOL;
+		return $headers;
+	}
+
+	/**
+	 * Get the message text for an email
+	 *
+	 * @param object|int       $p         Post we'd like message text for
+	 */
+	private function get_email_message_post( $p ) {
+		global $post;
+
+		if ( is_int( $p ) )
+			$post = get_post( $p );
+		else
+			$post = $p;
+
+		setup_postdata( $post );
+
+		$show_title = true;
+		if ( function_exists( 'p2_excerpted_title' ) ) {
+			if ( $post->post_title == p2_title_from_content( $post->post_content ) )
+				$show_title = false;
+		}
+
+		$vars = compact( 'post', 'show_title' );
+		$message = $this->get_template( 'post', $vars );
+
+		return $message;
+	}
+
+	private function get_template( $template, $vars = array() ) {
+
+		$template_path = dirname( __FILE__ ) . '/templates/' . $template . '.php';
+
+		ob_start();
+		if ( file_exists( $template_path ) ) {
+			extract( $vars );
+			include $template_path;
+		}
+
+		return wpautop( ob_get_clean() );
 	}
 
 }
