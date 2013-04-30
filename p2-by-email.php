@@ -69,11 +69,13 @@ class P2_By_Email {
 
 	/**
 	 * Get the message text for an email
+	 *
+	 * @param object|int       $post      Post we'd like message text for
 	 */
 	private function get_email_message_post( $post ) {
 
-		if ( is_int( $post_id ) )
-			$post = get_post();
+		if ( is_int( $post ) )
+			$post = get_post( $post );
 
 		$message = apply_filters( 'the_content', $post->post_content );
 		return $message;
