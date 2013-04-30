@@ -15,6 +15,7 @@ Domain Path: /languages
  * - Send a HTML-ified email notification on new posts and comments
  * - Allow emails to be sent from a Gmail account, and replied to directly
  * - Create a new post by email
+ * - @mentions force an email to be sent to a user, if the user exists. Otherwise, bold the user's login
  */
 
 
@@ -51,6 +52,11 @@ class P2_By_Email {
 		return wp_list_pluck( get_users(), 'user_email' );
 	}
 
+	/**
+	 * Queue notifications for a post
+	 *
+	 * @todo If there are more than X emails to send, queue some immediate wp-cron jobs
+	 */
 	public function queue_post_notifications( $post_id ) {
 
 		$following_emails = $this->get_following_post( $post_id );
