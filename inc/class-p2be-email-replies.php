@@ -198,9 +198,9 @@ class P2BE_Email_Replies extends P2_By_Email {
 			return $user;
 
 		if ( function_exists( 'What_The_Email' ) )
-			$message = What_The_Email()->get_message( $email->body );
+			$message = What_The_Email()->get_message( quoted_printable_decode( $email->body ) );
 		else
-			$message = $email->body;
+			$message = quoted_printable_decode( $email->body );
 		$message = wp_filter_post_kses( $message );
 
 		switch ( $parsed_key['type'] ) {
