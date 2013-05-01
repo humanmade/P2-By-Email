@@ -12,11 +12,15 @@ class P2BE_Email_Replies extends P2_By_Email {
 	public function setup_actions() {
 
 		// Make sure there are the appropriate connection details in place
-		if ( ! apply_filters( 'p2be_email_replies_enabled', false ) )
+		if ( ! $this->is_enabled() )
 			return;
 
 		add_filter( 'p2be_emails_reply_to_name', array( $this, 'filter_reply_to_name' ), 11, 3 );
 		add_filter( 'p2be_emails_reply_to_email', array( $this, 'filter_reply_to_email' ), 11, 3 );
+	}
+
+	public function is_enabled() {
+		return apply_filters( 'p2be_email_replies_enabled', false );
 	}
 
 	/**
@@ -39,6 +43,8 @@ class P2BE_Email_Replies extends P2_By_Email {
 			$address_secret .= 'p' . (int)$id;
 		else if ( 'comment' == $type )
 			$address_secret .= 'c' . (int)$id;
+		else if ( 'user' == $type )
+			$address_secret .= 'u' . (int)$id;
 
 		// @todo maybe hash the user_email so addresses are unique to email addresses
 		$address_secret .= '-' . $this->get_object_secret( $type, $id );
@@ -75,13 +81,15 @@ class P2BE_Email_Replies extends P2_By_Email {
 		if ( count( $secret_pieces ) != 2 )
 			return $wp_error;
 
-		if ( ! preg_match( '#(p|c)([\d]+)#', $secret_pieces[0], $matches ) )
+		if ( ! preg_match( '#(p|c|u)([\d]+)#', $secret_pieces[0], $matches ) )
 			return $wp_error;
 
 		if ( 'p' == $matches[1] )
 			$parsed_key['type'] = 'post';
 		else if ( 'c' == $matches[1] )
 			$parsed_key['type'] = 'comment';
+		else if ( 'u' == $matches[1] )
+			$parsed_key['type'] = 'user';
 		else
 			return $wp_error;
 
@@ -185,27 +193,58 @@ class P2BE_Email_Replies extends P2_By_Email {
 			$message = $email->body;
 		$message = wp_filter_post_kses( $message );
 
-		if ( 'post' == $parsed_key['type'] ) {
-			$post_id = $parsed_key['id'];
-			$comment_parent = 0;
-		} else {
-			$post_id = get_comment( $parsed_key['id'] )->comment_post_ID;
-			$comment_parent = $parsed_key['id'];
+		switch ( $parsed_key['type'] ) {
+			case 'post':
+			case 'comment':
+				if ( 'post' == $parsed_key['type'] ) {
+					$post_id = $parsed_key['id'];
+					$comment_parent = 0;
+				} else {
+					$post_id = get_comment( $parsed_key['id'] )->comment_post_ID;
+					$comment_parent = $parsed_key['id'];
+				}
+
+				$comment = array(
+					'comment_post_ID'        => $post_id,
+					'comment_author'         => $user->user_login,
+					'comment_author_email'   => $user->user_email,
+					'comment_author_url'     => $user->website,
+					'comment_content'        => $message,
+					'comment_parent'         => $comment_parent,
+					'user_id'                => $user->ID,
+				);
+				$comment_id = wp_insert_comment( $comment );
+
+				// Store the original body just in case
+				update_metadata( 'comment', $comment_id, $this->orig_body_key, wp_filter_post_kses( $email->body ) );
+				break;
+			case 'user':
+
+				$post_format = 'status';
+				if ( ! empty( $email->headers->subject ) ) {
+					$post_title = sanitize_text_field( $email->headers->subject );
+					$post_format = 'standard';
+				} else if ( function_exists( 'p2_title_from_content' ) ) {
+					$post_title = p2_title_from_content( $message );
+				} else {
+					$post_title = '';
+				}
+
+				$post = array(
+						'post_author'         => (int)$parsed_key['id'],
+						'post_content'        => $message,
+						'post_title'          => $post_title,
+						'post_type'           => 'post',
+						'post_status'         => 'publish',
+					);
+				$post_id = wp_insert_post( $post );
+
+				set_post_format( $post_id, $post_format );
+
+				// Store the original body just in case
+				update_metadata( 'post', $post_id, $this->orig_body_key, wp_filter_post_kses( $email->body ) );
+				break;
 		}
-
-		$comment = array(
-				'comment_post_ID'        => $post_id,
-				'comment_author'         => $user->user_login,
-				'comment_author_email'   => $user->user_email,
-				'comment_author_url'     => $user->website,
-				'comment_content'        => $message,
-				'comment_parent'         => $comment_parent,
-				'user_id'                => $user->ID,
-			);
-		$comment_id = wp_insert_comment( $comment );
-
-		// Store the original body just in case
-		update_metadata( 'comment', $comment_id, $this->orig_body_key, wp_filter_post_kses( $email->body ) );
 
 		return true;
 	}

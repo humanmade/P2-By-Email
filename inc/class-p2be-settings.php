@@ -36,6 +36,10 @@ class P2BE_Settings extends P2_By_Email {
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $user_options['posts'] ); ?>><?php echo esc_attr( $label ); ?></option>
 				<?php endforeach; ?>
 				</select>
+				<?php if ( P2_By_Email()->extend->email_replies->is_enabled() ) : ?>
+				<?php $user_secret_email = apply_filters( 'p2be_emails_reply_to_email', '', 'user', $user->ID ); ?>
+				<p class="description">Tip: Create new posts by emailing this secret address: <a href="<?php echo esc_url( 'mailto:' . $user_secret_email ); ?>"><?php echo esc_html( $user_secret_email ); ?></a>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<tr>
