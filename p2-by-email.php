@@ -10,14 +10,6 @@ Text Domain: p2-by-email
 Domain Path: /languages
 */
 
-/**
- * @todo:
- * - Send a HTML-ified email notification on new posts and comments
- * - Allow emails to be sent from a Gmail account, and replied to directly
- * - Create a new post by email
- * - @mentions force an email to be sent to a user, if the user exists. Otherwise, bold the user's login
- */
-
 class P2_By_Email {
 
 	private $data;
