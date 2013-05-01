@@ -38,7 +38,7 @@ class P2BE_Emails extends P2_By_Email {
 			$user_options = P2_By_Email()->extend->settings->get_user_notification_options( $user->ID );
 			if ( 'all' == $user_options['posts']
 				|| ( 'yes' == $user_options['mentions'] && $this->is_user_mentioned( $user, $post->post_content ) ) )
-					$this->send_post_notification( $post_id, $user->user_login );
+					$this->send_post_notification( $post_id, $user );
 		}
 	}
 
@@ -64,14 +64,14 @@ class P2BE_Emails extends P2_By_Email {
 			if ( 'all' == $user_options['comments']
 				|| ( 'yes' == $user_options['mentions'] && $this->is_user_mentioned( $user, $comment->comment_content ) ) )
 
-			$this->send_comment_notification( $comment_id, $user->user_login );
+			$this->send_comment_notification( $comment_id, $user );
 		}
 	}
 
 	/**
 	 * Send a notification to a user about a post
 	 */
-	public function send_post_notification( $post_id, $user_login ) {
+	public function send_post_notification( $post_id, $user ) {
 
 		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post_id );
@@ -79,19 +79,17 @@ class P2BE_Emails extends P2_By_Email {
 		$message = $this->get_email_message_post( $post_id );
 		$message = apply_filters( 'p2be_notification_message', $message, 'post', $post_id );
 
-		$email = get_user_by( 'login', $user_login )->user_email;
-
 		$mail_args = array(
 				'type'        => 'post',
 				'id'          => $post_id,
 			);
-		wp_mail( $email, $subject, $message, $this->get_email_headers( $mail_args ) );
+		wp_mail( $user->user_email, $subject, $message, $this->get_email_headers( $mail_args ) );
 	}
 
 	/**
 	 * Send a notification to a user about a comment
 	 */
-	public function send_comment_notification( $comment_id, $user_login ) {
+	public function send_comment_notification( $comment_id, $user ) {
 
 		$comment = get_comment( $comment_id );
 
@@ -101,13 +99,11 @@ class P2BE_Emails extends P2_By_Email {
 		$message = $this->get_email_message_comment( $comment_id );
 		$message = apply_filters( 'p2be_notification_message', $message, 'comment', $comment_id );
 
-		$email = get_user_by( 'login', $user_login )->user_email;
-
 		$mail_args = array(
 				'type'        => 'comment',
 				'id'          => $comment_id,
 			);
-		wp_mail( $email, $subject, $message, $this->get_email_headers( $mail_args ) );
+		wp_mail( $user->user_email, $subject, $message, $this->get_email_headers( $mail_args ) );
 
 	}
 
