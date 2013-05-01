@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: P2 By Email
-Version: 0.1-alpha
+Version: 1.0-alpha
 Description: For those who like to interact with P2 by email.
 Author: danielbachhuber
 Author URI: http://danielbachhuber.com/
