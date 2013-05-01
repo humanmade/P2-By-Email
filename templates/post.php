@@ -1,6 +1,4 @@
-<?php if ( $show_title ) : ?>
-<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-<?php endif; ?>
+<p style="font-style:italic;"><?php echo $author_wrote; ?>:</p>
 
 <?php the_content(); ?>
 

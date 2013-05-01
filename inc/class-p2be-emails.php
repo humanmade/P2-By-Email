@@ -158,13 +158,9 @@ class P2BE_Emails extends P2_By_Email {
 
 		setup_postdata( $post );
 
-		$show_title = true;
-		if ( function_exists( 'p2_excerpted_title' ) ) {
-			if ( $post->post_title == p2_title_from_content( $post->post_content ) )
-				$show_title = false;
-		}
+		$author_wrote = sprintf( '%s <a href="%s">wrote</a>', get_user_by( 'id', $post->post_author )->display_name, get_permalink( $post->ID ) );
 
-		$vars = compact( 'post', 'show_title' );
+		$vars = compact( 'post', 'author_wrote' );
 		$message = $this->get_template( 'post', $vars );
 
 		return $message;
