@@ -1,6 +1,6 @@
-<?php echo $in_reply_to; ?>:
+<p style="font-style:italic;"><?php echo $in_reply_to; ?>:</p>
 
-<blockquote><?php echo $quoted_text; ?></blockquote>
+<blockquote style="color:grey;"><?php echo $quoted_text; ?></blockquote>
 
 <?php comment_text( $comment->ID ); ?>
 
