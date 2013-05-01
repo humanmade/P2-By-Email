@@ -139,7 +139,7 @@ class P2BE_Email_Replies extends P2_By_Email {
 		// Make sure here are new emails to process
 		$email_count = imap_num_msg( $this->imap_connection );
 		if ( $email_count < 1 )
-			return false;
+			return 'No new emails to process.';
 
 		// Process each new email and put it in the archive mailbox when done
 		$success = 0;
