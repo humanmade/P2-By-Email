@@ -78,7 +78,9 @@ class P2BE_Emails extends P2_By_Email {
 		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post );
 
-		$message = $this->get_email_message_post( $post_id );
+		$post->post_content = $this->add_user_mention( $user, $post->post_content );
+
+		$message = $this->get_email_message_post( $post );
 		$message = apply_filters( 'p2be_notification_message', $message, 'post', $post );
 
 		$mail_args = array(
@@ -98,7 +100,9 @@ class P2BE_Emails extends P2_By_Email {
 		$subject = sprintf( '[New comment] %s', apply_filters( 'the_title', get_the_title( $comment->comment_post_ID ) ) );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'comment', $comment );
 
-		$message = $this->get_email_message_comment( $comment_id );
+		$comment->comment_content = $this->add_user_mention( $user, $comment->comment_content );
+
+		$message = $this->get_email_message_comment( $comment );
 		$message = apply_filters( 'p2be_notification_message', $message, 'comment', $comment );
 
 		$mail_args = array(
@@ -114,7 +118,14 @@ class P2BE_Emails extends P2_By_Email {
 	 */
 	private function is_user_mentioned( $user, $text ) {
 		$text = strip_tags( strip_shortcodes( $text ) );
-		return (bool)preg_match( '#[^\d\w]@' . $user->user_login . '[^\d\w]#i', $text );
+		return (bool)preg_match( '#@' . $user->user_login . '\b#i', $text );
+	}
+
+	/**
+	 * Highlight the user mention in the text
+	 */
+	private function add_user_mention( $user, $text ) {
+		return preg_replace( '/(\@' . $user->user_login . ')(\b)/i', '<strong>$1</strong>$2', $text, 1 );
 	}
 
 	private function get_email_headers( $args ) {
@@ -140,7 +151,10 @@ class P2BE_Emails extends P2_By_Email {
 	private function get_email_message_post( $p ) {
 		global $post;
 
-		$post = get_post( $p );
+		if ( is_int( $p ) )
+			$post = get_post( $p );
+		else
+			$post = $p;
 
 		setup_postdata( $post );
 
