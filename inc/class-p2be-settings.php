@@ -52,7 +52,7 @@ class P2BE_Settings extends P2_By_Email {
 			<th><label for="p2be-mentions">Mentions</label></th>
 			<td>
 				<select id="p2be-mentions" name="p2be-mentions">
-				<?php foreach( array( 'yes' => 'Make sure I get an email if someone mentions my username', 'no' => "Respect my post and comment notification settings" ) as $key => $label ) : ?>
+				<?php foreach( array( 'yes' => 'Make sure I get an email if someone @mentions my username', 'no' => "Respect my post and comment notification settings" ) as $key => $label ) : ?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $user_options['mentions'] ); ?>><?php echo esc_attr( $label ); ?></option>
 				<?php endforeach; ?>
 				</select>
