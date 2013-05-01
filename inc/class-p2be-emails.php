@@ -2,6 +2,8 @@
 
 class P2BE_Emails extends P2_By_Email {
 
+	private $sent_post_key = 'p2be_sent_timestamp';
+
 	public function __construct() {
 		add_action( 'p2be_after_setup_actions', array( $this, 'setup_actions' ) );
 	}
@@ -26,9 +28,15 @@ class P2BE_Emails extends P2_By_Email {
 	 *
 	 * @todo If there are more than X emails to send, queue some immediate wp-cron jobs
 	 */
-	public function queue_post_notifications( $post_id ) {
+	public function queue_post_notifications( $post ) {
 
-		$post = get_post( $post_id );
+		$post = get_post( $post );
+
+		// Only send one email; don't send again if update post triggers 'publish_post'
+		if ( apply_filters( 'p2be_emails_sent_post', get_post_meta( $post->ID, $this->sent_post_key, true ), $post->ID ) )
+			return;
+		else
+			update_post_meta( $post->ID, $this->sent_post_key, time() );
 
 		$users = get_users();
 		foreach( $users as $user ) {
@@ -41,7 +49,7 @@ class P2BE_Emails extends P2_By_Email {
 			$user_options = P2_By_Email()->extend->settings->get_user_notification_options( $user->ID );
 			if ( 'all' == $user_options['posts']
 				|| ( 'yes' == $user_options['mentions'] && $this->is_user_mentioned( $user, $post->post_content ) ) )
-					$this->send_post_notification( $post_id, $user );
+					$this->send_post_notification( $post, $user );
 		}
 	}
 
@@ -74,12 +82,10 @@ class P2BE_Emails extends P2_By_Email {
 	/**
 	 * Send a notification to a user about a post
 	 */
-	public function send_post_notification( $post_id, $user ) {
-
-		$post = get_post( $post_id );
+	public function send_post_notification( $post, $user ) {
 
 		$remove_texturize = remove_filter( 'the_title', 'wptexturize' );
-		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
+		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post->ID ) ) );
 		if ( $remove_texturize )
 			add_filter( 'the_title', 'wptexturize' );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post );
@@ -91,7 +97,7 @@ class P2BE_Emails extends P2_By_Email {
 
 		$mail_args = array(
 				'type'        => 'post',
-				'id'          => $post_id,
+				'id'          => $post->ID,
 			);
 		wp_mail( $user->user_email, $subject, $message, $this->get_email_headers( $mail_args ) );
 	}

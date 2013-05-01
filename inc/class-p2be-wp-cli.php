@@ -26,10 +26,11 @@ class P2BE_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid user specified" );
 
 		if ( $user_login ) {
-			P2_By_Email()->extend->emails->send_post_notifications( $post_id, $user );
+			P2_By_Email()->extend->emails->send_post_notifications( $post, $user );
 			WP_CLI::success( "Sent email to {$user_login} for post #{$post_id}." );
 		} else {
-			P2_By_Email()->extend->emails->queue_post_notifications( $post_id );
+			add_filter( 'p2be_emails_sent_post', '__return_false' );
+			P2_By_Email()->extend->emails->queue_post_notifications( $post );
 			WP_CLI::success( "Emails sent to all users subscribed to post #{$post_id}." );
 		}
 	}
