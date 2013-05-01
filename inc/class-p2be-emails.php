@@ -78,7 +78,10 @@ class P2BE_Emails extends P2_By_Email {
 
 		$post = get_post( $post_id );
 
+		$remove_texturize = remove_filter( 'the_title', 'wptexturize' );
 		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
+		if ( $remove_texturize )
+			add_filter( 'the_title', 'wptexturize' );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post );
 
 		$post->post_content = $this->add_user_mention( $user, $post->post_content );
@@ -100,7 +103,10 @@ class P2BE_Emails extends P2_By_Email {
 
 		$comment = get_comment( $comment_id );
 
+		$remove_texturize = remove_filter( 'the_title', 'wptexturize' );
 		$subject = sprintf( '[New comment] %s', apply_filters( 'the_title', get_the_title( $comment->comment_post_ID ) ) );
+		if ( $remove_texturize )
+			add_filter( 'the_title', 'wptexturize' );
 		$subject = apply_filters( 'p2be_notification_subject', $subject, 'comment', $comment );
 
 		$comment->comment_content = $this->add_user_mention( $user, $comment->comment_content );
