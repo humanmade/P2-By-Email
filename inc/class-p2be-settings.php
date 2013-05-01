@@ -24,8 +24,7 @@ class P2BE_Settings extends P2_By_Email {
 
 	public function user_profile_fields( $user ) {
 
-		$user_options = get_user_meta( $user->ID, $this->options_key, true );
-		$user_options = array_merge( $this->default_options, (array)$user_options );
+		$user_options = $this->get_user_notification_options( $user->ID );
 ?>
 <h3>P2 By Email</h3>
 	<table class="form-table">
@@ -80,6 +79,10 @@ class P2BE_Settings extends P2_By_Email {
 
 		update_user_meta( $user_id, $this->options_key, $user_options );
 		return;
+	}
+
+	public function get_user_notification_options( $user_id ) {
+		return array_merge( $this->default_options, (array)get_user_meta( $user_id, $this->options_key, true ) );
 	}
 
 

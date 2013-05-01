@@ -25,10 +25,20 @@ class P2BE_Emails extends P2_By_Email {
 	 */
 	public function queue_post_notifications( $post_id ) {
 
-		$following_logins = $this->get_following_post( $post_id );
+		$post = get_post( $post_id );
 
-		foreach( $following_logins as $user_login ) {
-			$this->send_post_notification( $post_id, $user_login );
+		$users = get_users();
+		foreach( $users as $user ) {
+
+			if ( $post->post_author == $user->ID ) {
+				if ( ! apply_filters( 'p2be_emails_send_notif_to_author', false, 'post', $user ) )
+					continue;
+			}
+
+			$user_options = P2_By_Email()->extend->settings->get_user_notification_options( $user->ID );
+			if ( 'all' == $user_options['posts']
+				|| ( 'yes' == $user_options['mentions'] && $this->is_user_mentioned( $user, $post->post_content ) ) )
+					$this->send_post_notification( $post_id, $user->user_login );
 		}
 	}
 
@@ -42,9 +52,19 @@ class P2BE_Emails extends P2_By_Email {
 		if ( 1 != $comment->comment_approved )
 			return;
 
-		$following_logins = $this->get_following_post( $comment->comment_post_ID );
-		foreach( $following_logins as $user_login ) {
-			$this->send_comment_notification( $comment_id, $user_login );
+		$users = get_users();
+		foreach( $users as $user ) {
+
+			if ( $comment->user_id == $user->ID ) {
+				if ( ! apply_filters( 'p2be_emails_send_notif_to_author', false, 'comment', $user ) )
+					continue;
+			}
+
+			$user_options = P2_By_Email()->extend->settings->get_user_notification_options( $user->ID );
+			if ( 'all' == $user_options['comments']
+				|| ( 'yes' == $user_options['mentions'] && $this->is_user_mentioned( $user, $comment->comment_content ) ) )
+
+			$this->send_comment_notification( $comment_id, $user->user_login );
 		}
 	}
 
@@ -89,6 +109,14 @@ class P2BE_Emails extends P2_By_Email {
 			);
 		wp_mail( $email, $subject, $message, $this->get_email_headers( $mail_args ) );
 
+	}
+
+	/**
+	 * Is the user mentioned in the text?
+	 */
+	private function is_user_mentioned( $user, $text ) {
+		$text = strip_tags( strip_shortcodes( $text ) );
+		return (bool)preg_match( '#[^\d\w]@' . $user->user_login . '[^\d\w]#i', $text );
 	}
 
 	private function get_email_headers( $args ) {
