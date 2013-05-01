@@ -135,7 +135,7 @@ class P2BE_Email_Replies extends P2_By_Email {
 		$inbox = $connection_details['inbox'];
 		$archive = $connection_details['archive'];
 
-		$this->imap_connection = imap_open( $connection_details['host'], $connection_details['username'], $connection_details['password'] );
+		$this->imap_connection = imap_open( $connection_details['host'] . 'INBOX', $connection_details['username'], $connection_details['password'] );
 		if ( ! $this->imap_connection )
 			return new WP_Error( 'connection-error', __( 'Error connecting to mailbox', 'p2-by-email' ) );
 
@@ -146,32 +146,37 @@ class P2BE_Email_Replies extends P2_By_Email {
 
 		// Make sure here are new emails to process
 		$email_count = imap_num_msg( $this->imap_connection );
+
 		if ( $email_count < 1 )
 			return 'No new emails to process.';
 
+		$emails = imap_search( $this->imap_connection, 'ALL', SE_UID );
+
 		// Process each new email and put it in the archive mailbox when done
 		$success = 0;
-		for( $i = 1; $i <= $email_count; $i++ ) {
+		foreach( array_reverse( $emails ) as $email_uid ) {
 			$email = new stdClass;
-			$email->headers = imap_headerinfo( $this->imap_connection, $i );
-			$email->structure = imap_fetchstructure( $this->imap_connection, $i );
-			$email->body = $this->get_body_from_connection( $this->imap_connection, $i );
+			$email->headers = imap_headerinfo( $this->imap_connection, imap_msgno( $this->imap_connection, $email_uid ) );
+			$email->structure = imap_fetchstructure( $this->imap_connection, $email_uid, FT_UID );
+			$email->body = $this->get_body_from_connection( $this->imap_connection, $email_uid );
 
 			// @todo Confirm this a message we want to process
-			$ret = $this->process_email( $email, $i );
+			$ret = $this->process_email( $email );
 			// If it was successful, move the email to the archive
 			if ( ! is_wp_error( $ret ) ) {
-				imap_mail_move( $this->imap_connection, $i, $archive );
+				imap_mail_move( $this->imap_connection, imap_msgno( $this->imap_connection, $email_uid ), $archive );
 				$success++;
 			}
 		}
+		imap_close( $this->imap_connection, CL_EXPUNGE );
+		
 		return sprintf( __( 'Processed %d emails', 'p2-by-email' ), $success );
 	}
 
 	/**
 	 * Given an email object, maybe add a reply or create a new post
 	 */
-	private function process_email( $email, $i ) {
+	private function process_email( $email ) {
 
 		if ( empty( $email->headers->to ) )
 			return new WP_Error( 'incorrect-headers', 'Email headers are missing or incorrect.' );
@@ -254,9 +259,9 @@ class P2BE_Email_Replies extends P2_By_Email {
 	 */
 	private function get_body_from_connection( $connection, $num, $type = 'text/plain' ) {
 		// Hacky way to get the email body. We should support more MIME types in the future
-		$body = imap_fetchbody( $connection, $num, 1.1 );
+		$body = imap_fetchbody( $connection, $num, 1.1, FT_UID );
 		if ( empty( $body ) )
-			$body = imap_fetchbody( $connection, $num, 1 );
+			$body = imap_fetchbody( $connection, $num, 1, FT_UID );
 		return $body;
 	}
 
