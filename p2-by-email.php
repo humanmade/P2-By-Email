@@ -65,6 +65,7 @@ class P2_By_Email {
 
 		require_once( $this->plugin_dir . 'inc/class-p2be-emails.php' );
 		require_once( $this->plugin_dir . 'inc/class-p2be-email-replies.php' );
+		require_once( $this->plugin_dir . 'inc/class-p2be-settings.php' );
 
 		if ( defined('WP_CLI') && WP_CLI )
 			require_once( $this->plugin_dir . 'inc/class-p2be-wp-cli.php' );
