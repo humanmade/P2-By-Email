@@ -11,6 +11,11 @@ class P2BE_Email_Replies extends P2_By_Email {
 
 	public function setup_actions() {
 
+		add_action( 'init', array( $this, 'action_init' ) );
+	}
+
+	public function action_init() {
+		
 		// Make sure there are the appropriate connection details in place
 		if ( ! $this->is_enabled() )
 			return;
