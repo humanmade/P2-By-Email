@@ -188,7 +188,7 @@ class P2BE_Emails extends P2_By_Email {
 		} else {
 			$post = get_post( $comment->comment_post_ID );
 			$in_reply_to = sprintf( $in_reply_to, esc_url( get_permalink( $comment->comment_post_ID ) ), get_user_by( 'id', $post->post_author )->display_name );
-			$quoted_text = $this->get_summary( $post->post_content );
+			$quoted_text = $this->get_summary( apply_filters( 'the_content', $post->post_content ) );
 		}
 
 		$vars = compact( 'comment', 'in_reply_to', 'quoted_text' );
@@ -202,7 +202,8 @@ class P2BE_Emails extends P2_By_Email {
 	 */
 	private function get_summary( $text ) {
 
-		return substr( strip_tags( strip_shortcodes( $text ) ), 0, 195 );
+		$text = strip_tags( $text, '<a><strong><ol><li><p><ul><em><span><div><blockquote>' );
+		return force_balance_tags( substr( $text, 0, 195 ) );
 	}
 
 }
