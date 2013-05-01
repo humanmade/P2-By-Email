@@ -16,6 +16,9 @@ class P2BE_Emails extends P2_By_Email {
 		add_action( 'publish_post', array( $this, 'queue_post_notifications' ) );
 		add_action( 'wp_insert_comment', array( $this, 'queue_comment_notifications' ) );
 
+		// Disable the default core notification (filter ignores __return_false)
+		add_filter( 'pre_option_comments_notify', '__return_zero' );
+
 	}
 
 	/**
