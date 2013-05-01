@@ -73,11 +73,13 @@ class P2BE_Emails extends P2_By_Email {
 	 */
 	public function send_post_notification( $post_id, $user ) {
 
+		$post = get_post( $post_id );
+
 		$subject = sprintf( '[New post] %s', apply_filters( 'the_title', get_the_title( $post_id ) ) );
-		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post_id );
+		$subject = apply_filters( 'p2be_notification_subject', $subject, 'post', $post );
 
 		$message = $this->get_email_message_post( $post_id );
-		$message = apply_filters( 'p2be_notification_message', $message, 'post', $post_id );
+		$message = apply_filters( 'p2be_notification_message', $message, 'post', $post );
 
 		$mail_args = array(
 				'type'        => 'post',
@@ -94,10 +96,10 @@ class P2BE_Emails extends P2_By_Email {
 		$comment = get_comment( $comment_id );
 
 		$subject = sprintf( '[New comment] %s', apply_filters( 'the_title', get_the_title( $comment->comment_post_ID ) ) );
-		$subject = apply_filters( 'p2be_notification_subject', $subject, 'comment', $comment_id );
+		$subject = apply_filters( 'p2be_notification_subject', $subject, 'comment', $comment );
 
 		$message = $this->get_email_message_comment( $comment_id );
-		$message = apply_filters( 'p2be_notification_message', $message, 'comment', $comment_id );
+		$message = apply_filters( 'p2be_notification_message', $message, 'comment', $comment );
 
 		$mail_args = array(
 				'type'        => 'comment',
