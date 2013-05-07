@@ -236,8 +236,8 @@ class P2BE_Emails extends P2_By_Email {
 	 */
 	private function get_summary( $text ) {
 
-		$text = strip_tags( $text, '<a><strong><ol><li><p><ul><em><span><div><blockquote>' );
-		return force_balance_tags( substr( $text, 0, 195 ) );
+		$text = strip_tags( $text );
+		return wpautop( substr( $text, 0, 195 ) );
 	}
 
 }
