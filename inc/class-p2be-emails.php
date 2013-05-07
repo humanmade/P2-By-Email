@@ -192,13 +192,13 @@ class P2BE_Emails extends P2_By_Email {
 		else
 			$comment = $c;
 
-		$in_reply_to = 'In reply to <a href="%s">%s</a>';
+		$in_reply_to = '%s replied to <a href="%s">%s</a>';
 		if ( $comment->comment_parent ) {
-			$in_reply_to = sprintf( $in_reply_to, esc_url( get_comment_link( $comment->comment_parent ) ), get_comment_author( $comment->comment_parent ) );
+			$in_reply_to = sprintf( $in_reply_to, get_comment_author( $comment->comment_ID ), esc_url( get_comment_link( $comment->comment_parent ) ), get_comment_author( $comment->comment_parent ) );
 			$quoted_text = $this->get_summary( get_comment( $comment->comment_parent )->comment_content );
 		} else {
 			$post = get_post( $comment->comment_post_ID );
-			$in_reply_to = sprintf( $in_reply_to, esc_url( get_permalink( $comment->comment_post_ID ) ), get_user_by( 'id', $post->post_author )->display_name );
+			$in_reply_to = sprintf( $in_reply_to, get_comment_author( $comment->comment_ID ), esc_url( get_permalink( $comment->comment_post_ID ) ), get_user_by( 'id', $post->post_author )->display_name );
 			$quoted_text = $this->get_summary( apply_filters( 'the_content', $post->post_content ) );
 		}
 
