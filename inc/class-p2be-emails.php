@@ -143,19 +143,42 @@ class P2BE_Emails extends P2_By_Email {
 		return preg_replace( '/(\@' . $user->user_login . ')(\b)/i', '<strong>$1</strong>$2', $text, 1 );
 	}
 
+	/**
+	 * Get a fake email address for this domain
+	 *
+	 * @param string       $mailbox         A fake mailbox
+	 * @return string      $email_address   A fake email address at this domain
+	 */
+	private function get_domain_email_address( $mailbox ) {
+		return $mailbox . '@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
+	}
+
 	private function get_email_headers( $args ) {
 
+		$headers = array();
+
 		$from_name = apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name'), $args['type'], $args['id'] );
-		$from_email = apply_filters( 'p2be_emails_from_email', 'noreply@' . rtrim( str_replace( 'http://', '', home_url() ), '/' ), $args['type'], $args['id'] );
-		$headers = sprintf( 'From: %s <%s>', get_bloginfo( 'name'), $from_email ) . PHP_EOL;
+		$from_email = apply_filters( 'p2be_emails_from_email', $this->get_domain_email_address( 'noreply' ), $args['type'], $args['id'] );
+		$headers[] = sprintf( 'From: %s <%s>', get_bloginfo( 'name'), $from_email );
 
 		$reply_to_name = apply_filters( 'p2be_emails_reply_to_name', '',  $args['type'], $args['id'] );
 		$reply_to_email = apply_filters( 'p2be_emails_reply_to_email', '',  $args['type'], $args['id'] );
 		if ( $reply_to_name && $reply_to_email )
-			$headers .= sprintf( 'Reply-To: %s <%s>', $reply_to_name, $reply_to_email ) . PHP_EOL;
+			$headers[] = sprintf( 'Reply-To: %s <%s>', $reply_to_name, $reply_to_email );
 
-		$headers .= 'Content-type: text/html' . PHP_EOL;
-		return $headers;
+		// Used for threading emails
+		if ( 'post' == $args['type'] ) {
+			$headers[] = sprintf( 'Message-ID: <%s>', $this->get_domain_email_address( $args['id'] . '-0' ) );
+		} else {
+			$post_id = get_comment( $args['id'] )->comment_post_ID;
+			$headers[] = sprintf( 'Message-ID: <%s>', $this->get_domain_email_address( $post_id . '-' . $args['id'] ) );
+			$headers[] = sprintf( 'In-Reply-To: <%s>', $this->get_domain_email_address( $post_id . '-0'  ) );
+				
+		}
+
+
+		$headers[] = 'Content-type: text/html';
+		return implode( PHP_EOL, $headers );
 	}
 
 	/**
