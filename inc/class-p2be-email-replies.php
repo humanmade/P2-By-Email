@@ -216,9 +216,9 @@ class P2BE_Email_Replies extends P2_By_Email {
 
 				$comment = array(
 					'comment_post_ID'        => $post_id,
-					'comment_author'         => $user->user_login,
+					'comment_author'         => $user->display_name,
 					'comment_author_email'   => $user->user_email,
-					'comment_author_url'     => $user->website,
+					'comment_author_url'     => $user->user_url,
 					'comment_content'        => $message,
 					'comment_parent'         => $comment_parent,
 					'user_id'                => $user->ID,
