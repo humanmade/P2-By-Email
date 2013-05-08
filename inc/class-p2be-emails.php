@@ -143,23 +143,13 @@ class P2BE_Emails extends P2_By_Email {
 		return preg_replace( '/(\@' . $user->user_login . ')(\b)/i', '<strong>$1</strong>$2', $text, 1 );
 	}
 
-	/**
-	 * Get a fake email address for this domain
-	 *
-	 * @param string       $mailbox         A fake mailbox
-	 * @return string      $email_address   A fake email address at this domain
-	 */
-	private function get_domain_email_address( $mailbox ) {
-		return $mailbox . '@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
-	}
-
 	private function get_email_headers( $args ) {
 
 		$headers = array();
 
-		$from_name = apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name'), $args['type'], $args['id'] );
-		$from_email = apply_filters( 'p2be_emails_from_email', $this->get_domain_email_address( 'noreply' ), $args['type'], $args['id'] );
-		$headers[] = sprintf( 'From: %s <%s>', get_bloginfo( 'name'), $from_email );
+		$headers[] = sprintf( 'From: %s <%s>', 
+			$this->get_default_from_name(), 
+			$this->get_default_from_address() );
 
 		$reply_to_name = apply_filters( 'p2be_emails_reply_to_name', '',  $args['type'], $args['id'] );
 		$reply_to_email = apply_filters( 'p2be_emails_reply_to_email', '',  $args['type'], $args['id'] );

@@ -88,6 +88,30 @@ class P2_By_Email {
 		return wpautop( ob_get_clean() );
 	}
 
+	/**
+	 * Get a default From name for this site
+	 */
+	protected function get_default_from_name() {
+		return apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name') );
+	}
+
+	/**
+	 * Get a default From email address for this domain
+	 */
+	protected function get_default_from_address() {
+		return $this->get_domain_email_address( 'noreply' );
+	}
+
+	/**
+	 * Get a fake email address for this domain
+	 *
+	 * @param string       $mailbox         A fake mailbox
+	 * @return string      $email_address   A fake email address at this domain
+	 */
+	protected function get_domain_email_address( $mailbox ) {
+		return $mailbox . '@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
+	}
+
 }
 
 function P2_By_Email() {
