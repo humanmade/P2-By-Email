@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: P2 By Email
-Version: 1.0-beta1
+Version: 1.0
 Description: For those who like to interact with P2 by email.
 Author: danielbachhuber, humanmade
 Author URI: http://hmn.md/
-Plugin URI: PLUGIN SITE HERE
+Plugin URI: http://wordpress.org/extend/plugins/p2-by-email/
 Text Domain: p2-by-email
 Domain Path: /languages
 */

@@ -3,7 +3,7 @@ Contributors: danielbachhuber, humanmade
 Tags: gtd, productivity, workflow, p2, email notifications
 Requires at least: 3.4
 Tested up to: 3.6-alpha
-Stable tag: 0.0
+Stable tag: 1.0
 
 Use P2? Use email? Use both!
 
