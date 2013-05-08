@@ -34,7 +34,6 @@ Enabling reply / post by email takes a few more steps:
 1. Register a Gmail or similar email account that supports IMAP.
 1. Add the code snippet below with account details to your theme's functions.php file.
 1. Install [wp-cli](http://wp-cli.org/) and set up a cron job to regularly call `wp p2-by-email ingest-emails`.
-1. Install and activate [What The Email](https://github.com/humanmade/What-The-Email) for improved email reply parsing.
 
 `add_filter( 'p2be_email_replies_enabled', '__return_true' );
 add_filter( 'p2be_emails_reply_to_email', function( $email ) {
