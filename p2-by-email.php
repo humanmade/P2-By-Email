@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: P2 By Email
-Version: 1.0-alpha
+Version: 1.0-beta1
 Description: For those who like to interact with P2 by email.
-Author: danielbachhuber
-Author URI: http://danielbachhuber.com/
+Author: danielbachhuber, humanmade
+Author URI: http://hmn.md/
 Plugin URI: PLUGIN SITE HERE
 Text Domain: p2-by-email
 Domain Path: /languages
