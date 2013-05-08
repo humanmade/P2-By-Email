@@ -20,6 +20,8 @@ Perfect for communicating with your team while on the go.
 
 Users can change their communication preferences from the default of all posts and comments using profile settings. A special setting can ensure they always receive an email when their username is mentioned.
 
+Want another feature added? [Send us a pull request](https://github.com/humanmade/P2-By-Email/) and we'll consider it.
+
 == Installation ==
 
 Want to get started using the plugin? Follow these steps:
