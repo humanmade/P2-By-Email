@@ -108,28 +108,6 @@ class P2BE_Email_Replies extends P2_By_Email {
 	}
 
 	/**
-	 * Parse the sender as WordPress user from email headers
-	 */
-	private function parse_sender( $email ) {
-
-		$wp_error = new WP_Error( 'invalid-sender', 'Sender headers are invalid.' );
-
-		if ( empty( $email->headers->from ) )
-			return $wp_error;
-
-		$sender = array_shift( $email->headers->from );
-		if ( empty( $sender->mailbox ) || empty( $sender->host ) )
-			return $wp_error;
-
-		$email_address = sanitize_email( $sender->mailbox . '@' . $sender->host );
-		$user = get_user_by( 'email', $email_address );
-		if ( $user )
-			return $user;
-		else
-			return $wp_error;
-	}
-
-	/**
 	 * Ingest emails in an SMTP email box
 	 */
 	public function ingest_emails( $connection_details ) {
@@ -168,10 +146,39 @@ class P2BE_Email_Replies extends P2_By_Email {
 			// @todo Confirm this a message we want to process
 			$ret = $this->process_email( $email );
 			// If it was successful, move the email to the archive
-			if ( ! is_wp_error( $ret ) ) {
-				imap_mail_move( $this->imap_connection, imap_msgno( $this->imap_connection, $email_uid ), $archive );
+			if ( $ret && ! is_wp_error( $ret ) ) {
+				$this->move_email( $email_uid, $archive );
 				$success++;
-			}
+			} else if ( is_wp_error( $ret ) ) {
+
+				switch( $ret->get_error_code() ) {
+					// Replying email address doesn't match any known users
+					case 'invalid-user':
+
+						$email_address = $this->parse_sender_email_from_headers( $email->headers );
+						if ( is_wp_error( $email_address ) )
+							break;
+
+						$subject = "We're sorry, but there was an error delivering your message";
+						$message = array(
+							'Hi,',
+							PHP_EOL,
+							'There was an error delivering your message: ' . $ret->get_error_message(),
+							PHP_EOL,
+							"For your convenience, here's the original:",
+							PHP_EOL,
+							$this->get_reply_from_email( $email )
+							);
+
+						$headers = sprintf( 'From: %s <%s>', 
+							$this->get_default_from_name(), 
+							$this->get_default_from_address() );
+					
+						wp_mail( $email_address, $subject, implode( PHP_EOL, $message ), $headers );
+						$this->move_email( $email_uid, $archive );
+						break;
+				}
+			} 
 		}
 		imap_close( $this->imap_connection, CL_EXPUNGE );
 		
@@ -193,14 +200,11 @@ class P2BE_Email_Replies extends P2_By_Email {
 		if ( is_wp_error( $parsed_key ) )
 			return $parsed_key;
 
-		$user = $this->parse_sender( $email );
+		$user = $this->get_user_from_email( $email );
 		if ( is_wp_error( $user ) )
 			return $user;
 
-		if ( function_exists( 'What_The_Email' ) )
-			$message = What_The_Email()->get_message( quoted_printable_decode( $email->body ) );
-		else
-			$message = quoted_printable_decode( $email->body );
+		$message = $this->get_reply_from_email( $email );
 		$message = wp_filter_post_kses( $message );
 
 		switch ( $parsed_key['type'] ) {
@@ -257,6 +261,56 @@ class P2BE_Email_Replies extends P2_By_Email {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Move an email to a new mailbox
+	 *
+	 * @param int          $email_uid        UID for the email
+	 * @param string       $mailbox          Where the email should end up
+	 */
+	private function move_email( $email_uid, $mailbox ) {
+		return imap_mail_move( $this->imap_connection, imap_msgno( $this->imap_connection, $email_uid ), $mailbox );
+	}
+
+		/**
+	 * Parse the sender as WordPress user from email headers
+	 */
+	private function get_user_from_email( $email ) {
+
+		$email_address = $this->parse_sender_email_from_headers( $email->headers );
+
+		$user = get_user_by( 'email', $email_address );
+		if ( $user )
+			return $user;
+		else
+			return new WP_Error( 'invalid-user', 'No user exists with this email address.' );
+	}
+
+	/**
+	 * Parse the sending email address from the headers
+	 */
+	private function parse_sender_email_from_headers( $headers ) {
+
+		if ( empty( $headers->from ) && empty( $headers->sender ) )
+			return new WP_Error( 'invalid-sender', 'Sender from headers are empty.' );
+
+		$sender = array_shift( $headers->from );
+		if ( empty( $sender ) )
+			$sender = array_shift( $headers->sender );
+		if ( empty( $sender->mailbox ) || empty( $sender->host ) )
+			return new WP_Error( 'invalid-sender', 'Sender from headers are missing.' );
+
+		return sanitize_email( $sender->mailbox . '@' . $sender->host );
+	}
+
+	/**
+	 * Parse the reply from the email
+	 */
+	private function get_reply_from_email( $email ) {
+		$what_the_email = new What_The_Email( $email );
+		$message = quoted_printable_decode( $what_the_email->get_reply() );
+		return $message;
 	}
 
 	/**
