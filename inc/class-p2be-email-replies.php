@@ -99,7 +99,7 @@ class P2BE_Email_Replies extends P2_By_Email {
 			return $wp_error;
 
 		$secret_key = get_metadata( $parsed_key['type'], $matches[2], $this->secret_key, true );
-		if ( $secret_pieces[1] === $secret_key ) {
+		if ( strtolower( $secret_pieces[1] ) === strtolower( $secret_key ) ) {
 			$parsed_key['id'] = $matches[2];
 			return $parsed_key;
 		} else {
