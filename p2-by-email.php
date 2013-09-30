@@ -109,7 +109,7 @@ class P2_By_Email {
 	 * @return string      $email_address   A fake email address at this domain
 	 */
 	protected function get_domain_email_address( $mailbox ) {
-		return $mailbox . '@' . rtrim( str_replace( 'http://', '', home_url() ), '/' );
+		return $mailbox . '@' . rtrim( str_replace( array('http://', 'https://'), '', home_url() ), '/' );
 	}
 
 }
