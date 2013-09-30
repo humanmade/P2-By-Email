@@ -57,6 +57,10 @@ None yet... Feel free to ask a question in the forums!
 
 == Changelog ==
 
+= 1.1 (??? ?? ????) =
+
+* Bug fix: Fix from: mailing address when site uses HTTPS. [Thanks rjmackay](https://github.com/rjmackay).
+
 = 1.0 (May 8, 2013) =
 
 * Initial release. Email notifications for posts, comments, and mentions; post and reply by email with special configuration.
