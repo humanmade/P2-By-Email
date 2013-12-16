@@ -92,14 +92,14 @@ class P2_By_Email {
 	 * Get a default From name for this site
 	 */
 	protected function get_default_from_name() {
-		return apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name') );
+		return apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name' ) );
 	}
 
 	/**
 	 * Get a default From email address for this domain
 	 */
 	protected function get_default_from_address() {
-		return $this->get_domain_email_address( 'noreply' );
+		return apply_filters( 'p2be_emails_from_address', $this->get_domain_email_address( 'noreply' ) );
 	}
 
 	/**
