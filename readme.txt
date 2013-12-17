@@ -59,6 +59,7 @@ None yet... Feel free to ask a question in the forums!
 
 = 1.1 (??? ?? ????) =
 
+* Allow the "From Address" to be filtered. [Thanks westonruter](https://github.com/westonruter).
 * Bug fix: Fix from: mailing address when site uses HTTPS. [Thanks rjmackay](https://github.com/rjmackay).
 
 = 1.0 (May 8, 2013) =
