@@ -92,14 +92,14 @@ class P2_By_Email {
 	 * Get a default From name for this site
 	 */
 	protected function get_default_from_name() {
-		return apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name') );
+		return apply_filters( 'p2be_emails_from_name', get_bloginfo( 'name' ) );
 	}
 
 	/**
 	 * Get a default From email address for this domain
 	 */
 	protected function get_default_from_address() {
-		return $this->get_domain_email_address( 'noreply' );
+		return apply_filters( 'p2be_emails_from_address', $this->get_domain_email_address( 'noreply' ) );
 	}
 
 	/**
@@ -109,7 +109,7 @@ class P2_By_Email {
 	 * @return string      $email_address   A fake email address at this domain
 	 */
 	protected function get_domain_email_address( $mailbox ) {
-		return $mailbox . '@' . rtrim( str_replace( array('http://', 'https://'), '', home_url() ), '/' );
+		return $mailbox . '@' . parse_url( home_url(), PHP_URL_HOST );
 	}
 
 }
