@@ -1,4 +1,4 @@
-_**This project is unmaintained.**_
+_**This project is unmaintained. We recommend you check out [Falcon](https://github.com/rmccue/falcon).**_
 
 === P2 By Email ===
 Contributors: danielbachhuber, humanmade
