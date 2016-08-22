@@ -156,18 +156,11 @@ class P2BE_Emails extends P2_By_Email {
 		if ( $reply_to_name && $reply_to_email )
 			$headers[] = sprintf( 'Reply-To: %s <%s>', $reply_to_name, $reply_to_email );
 
-		// Used for threading emails
-		if ( 'post' == $args['type'] ) {
-			$headers[] = sprintf( 'Message-ID: <%s>', $this->get_domain_email_address( $args['id'] . '-0' ) );
-		} else {
-			$post_id = get_comment( $args['id'] )->comment_post_ID;
-			$headers[] = sprintf( 'Message-ID: <%s>', $this->get_domain_email_address( $post_id . '-' . $args['id'] ) );
-			$headers[] = sprintf( 'In-Reply-To: <%s>', $this->get_domain_email_address( $post_id . '-0'  ) );
-				
-		}
-
+		$post_id = get_comment( $args['id'] )->comment_post_ID;
+		$headers[] = sprintf( 'In-Reply-To: <%s>', $this->get_domain_email_address( $post_id . '-0'  ) );
 
 		$headers[] = 'Content-type: text/html';
+
 		return implode( PHP_EOL, $headers );
 	}
 
